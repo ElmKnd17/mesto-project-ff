@@ -1,58 +1,42 @@
-function openModal(window) {
-    window.style.visibility = 'visible';
-    window.style.opacity = 1;
-    window.style.pointerEvents = 'all';
-    window.style.userSelect = 'text';
-}
-
-function closeModal(window) {
-    window.style.visibility = 'hidden';
-    window.style.opacity = 0;
-    window.style.pointerEvents = 'none';
-    window.style.userSelect = 'none';
-}
-
-    // Функция добавления слушателей событий на модальное окно
-    // (я бы добавил её в modal.js, но в условии говорится, что обработчики модальных окон должны находиться в index.js)
-    function setModalListeners(modal, openButton) {
-        // Функция очистки инпутов (при их наличии)
-        function clearInputs() {
-            const form = modal.querySelector('.popup__form');
-            if(form) {
-               form.reset();
-            }
+// Обработчик слушателя кнопки Escape
+function closeByEcsape(evt) {
+    if(evt.key === 'Escape') {
+        const openedPopup = document.querySelector('.popup_is-opened');
+        const openedPopupForm = openedPopup.querySelector('.popup__form');
+        closeModal(openedPopup);
+        if(openedPopupForm) {
+            openedPopupForm.reset();
         }
-        // Обработчик события Escape
-        function escapeHandler(evt) {
-            if(evt.key === "Escape") {
-                closeModal(modal);
-                evt.currentTarget.removeEventListener('keydown', escapeHandler);
-    
-                clearInputs();
-            }
-        }
-        // Добавление слушателя событие на кнопку открытия модального окна
-        openButton.addEventListener('click', () => {
-            openModal(modal);
-    
-            // Добавление слушателя событий на кнопку Esc (только в случае открытия модального окна)
-            document.addEventListener('keydown', escapeHandler);
-        });
-        // Добавление слушателя событие на кнопку закрытия модального окна
-        const closeButton = modal.querySelector('.popup__close');
-        closeButton.addEventListener('click', () => {
-            closeModal(modal);
-    
-            clearInputs();
-        });
-        // Добавление слушателя события на оверлей
-        modal.addEventListener('click', (evt) => {
-            if (evt.target.classList.contains('popup')){
-                closeModal(modal);
-    
-                clearInputs();
-            }
-        });
     }
+}
 
-export {closeModal, setModalListeners};
+// Функция открытия модального окна
+function openModal(modal) {
+    modal.classList.add('popup_is-opened');
+    document.addEventListener('keydown', closeByEcsape);
+}
+
+// Функция закрытия модального окна
+function closeModal(modal) {
+    modal.classList.remove('popup_is-opened');
+    document.removeEventListener('keydown', closeByEcsape);
+}
+
+// Функция установки слушателей на модальное окно
+function setModalListeners(modal, formElement, closeButton) {
+    // Открытие модального окна
+    openModal(modal);
+    // Установка слушателей на способы закрытия модального окна (по кнопке и по нажатию вне окна)
+    closeButton.addEventListener('click', () => {
+        closeModal(modal);
+        formElement.reset();
+    })
+    modal.addEventListener('click', (evt) => {
+        if (evt.target.classList.contains('popup')){
+            closeModal(evt.target);
+            formElement.reset();
+        }
+    })
+}
+
+export {openModal, closeModal, setModalListeners};

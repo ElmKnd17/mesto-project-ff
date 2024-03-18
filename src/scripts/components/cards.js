@@ -26,7 +26,7 @@ const initialCards = [
 ];
 
 // Функция создания карточки
-function createCard (cardData, deleteCard, template, likeHandler, cardOpeningModal, setModalListeners) {
+function createCard (cardData, deleteCard, template, likeHandler, cardOpeningModal, openModal, closeModal) {
   const cardItem = template.content.cloneNode(true);
 
   // Настройка фотографии карточки
@@ -47,15 +47,34 @@ function createCard (cardData, deleteCard, template, likeHandler, cardOpeningMod
   const deletButton = cardItem.querySelector('.card__delete-button');
   deletButton.setAttribute('aria-label', 'Удалить место');
   deletButton.addEventListener('click', deleteCard);
+
+  // Обработчик слушателя кнопки открытия модального окна карточки
+  function handleClickImage(){
+    // Настройка изображения модального окна открытой карточки
+    const cardOpeningModalImage = cardOpeningModal.querySelector('.popup__image');
+    cardOpeningModalImage.src = cardImage.src;
+    cardOpeningModalImage.alt = cardImage.alt;
+
+    // Настройка подписи модального окна открытой карточки
+    cardOpeningModal.querySelector('.popup__caption').textContent = cardTitle.textContent;
+
+    // Открытие модального окна
+    openModal(cardOpeningModal);
+
+    // Установка слушателей на способы закрытия модального окна (по кнопке и по нажатию вне окна)
+    const closeCardOpenModalButton = cardOpeningModal.querySelector('.popup__close');
+    closeCardOpenModalButton.addEventListener('click', () => {
+      closeModal(cardOpeningModal);
+    })
+    cardOpeningModal.addEventListener('click', (evt) => {
+      if (evt.target.classList.contains('popup')){
+          closeModal(evt.target);
+      }
+    })
+  }
+  // Установка слушателя на кнопку открытия модального окна
+  cardImage.addEventListener('click', handleClickImage);
   
-  // Настройка модального окна открытой карточки
-  const cardOpeningModalImage = cardOpeningModal.querySelector('.popup__image'); // Настройка изображения модального окна открытой карточки
-  cardOpeningModalImage.src = cardImage.src;
-  cardOpeningModalImage.alt = cardImage.alt;
-  cardOpeningModal.querySelector('.popup__caption').textContent = cardTitle.textContent; // Настройка подписи модального окна открытой карточки
-
-  setModalListeners(cardOpeningModal, cardImage);
-
   return cardItem;
 }
 
