@@ -27,6 +27,10 @@ const cardFormElement = cardAdditionModal.querySelector('.popup__form'); // Фо
 const cardOpeningModal = document.querySelector('.popup_type_image'); // Модальное окно открытой карточки
 const cardList = document.querySelector('.places__list'); // Список карточек
 const cardTemplate = document.querySelector('#card-template'); // Темплейт карточки
+// Элементы модального окна
+const cardOpeningModalImage = cardOpeningModal.querySelector('.popup__image'); // Изображение модального окна
+const cardOpeningModalCaption = cardOpeningModal.querySelector('.popup__caption'); // Описание модального окна
+const closeCardOpenModalButton = cardOpeningModal.querySelector('.popup__close'); // Кнопка закрытия модального окна
 // Выбор полей формы
 const cardNameInput = cardFormElement.querySelector('.popup__input_type_card-name');
 const cardUrlInput = cardFormElement.querySelector('.popup__input_type_url');
@@ -40,6 +44,20 @@ openProfileModalButton.addEventListener('click', () => {
     profileJobInput.value = profileDescription.textContent;
 })
     ///////////////// Модальное окно редактирования карточки /////////////////
+// Обработчик слушателя кнопки открытия модального окна карточки
+function handleClickImage(evt){
+    // Нажатая карточка
+    const targetCard = evt.target.closest('.card');
+    // Заголовок нажатой карточки
+    const targetCardTitle = targetCard.querySelector('.card__title');
+    // Настройка изображения модального окна открытой карточки
+    cardOpeningModalImage.src = evt.target.src;
+    cardOpeningModalImage.alt = evt.target.alt;
+    // Настройка подписи модального окна открытой карточки
+    cardOpeningModalCaption.textContent = targetCardTitle.textContent;
+    // Открытие модального окна
+    openModal(cardOpeningModal, closeCardOpenModalButton);
+}
 // Слушатель кнопки открытия модального окна
 openCardAdditionModalButton.addEventListener('click', () => {
     openModal(cardAdditionModal, closeCardAdditionalModalButton);
@@ -49,7 +67,7 @@ openCardAdditionModalButton.addEventListener('click', () => {
 ///////////////////////////////////// КАРТОЧКИ /////////////////////////////////////
 // Вывод карточек на страницу
 initialCards.forEach(element => {
-    cardList.append(createCard(element, deleteCard, cardTemplate, likeHandler, cardOpeningModal, openModal, closeModal));
+    cardList.append(createCard(element, deleteCard, cardTemplate, likeHandler, handleClickImage));
 })
 
 ///////////////////////////////////// ФОРМЫ /////////////////////////////////////
@@ -73,7 +91,7 @@ function handleAddCardFormSubmit(evt) {
     const cardName = cardNameInput.value;
     const cardUrl = cardUrlInput.value;
     closeModal(cardAdditionModal, closeCardAdditionalModalButton);
-    cardList.prepend(createCard({name: cardName, link: cardUrl}, deleteCard, cardTemplate, likeHandler, cardOpeningModal, openModal, closeModal));
+    cardList.prepend(createCard({name: cardName, link: cardUrl}, deleteCard, cardTemplate, likeHandler, handleClickImage));
 }
 // Слушатель отправки формы
 cardFormElement.addEventListener('submit', handleAddCardFormSubmit);

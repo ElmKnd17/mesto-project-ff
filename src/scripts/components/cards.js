@@ -26,7 +26,7 @@ const initialCards = [
 ];
 
 // Функция создания карточки
-function createCard (cardData, deleteCard, template, likeHandler, cardOpeningModal, openModal, closeModal) {
+function createCard (cardData, deleteCard, template, likeHandler, handleClickImage) {
 
   // Переменные
   const cardItem = template.content.cloneNode(true); // Объект карточки
@@ -34,8 +34,6 @@ function createCard (cardData, deleteCard, template, likeHandler, cardOpeningMod
   const cardTitle = cardItem.querySelector('.card__title'); // Заголовок карточки
   const likeButton = cardItem.querySelector('.card__like-button'); // Кнопка лайка
   const deletButton = cardItem.querySelector('.card__delete-button'); // Кнопка удаления карточки
-  const cardOpeningModalImage = cardOpeningModal.querySelector('.popup__image'); // Изображение модального окна
-  const closeCardOpenModalButton = cardOpeningModal.querySelector('.popup__close'); // Кнопка закрытия модального окна
 
   // Настройка фотографии карточки
   cardImage.src = cardData.link;
@@ -52,20 +50,6 @@ function createCard (cardData, deleteCard, template, likeHandler, cardOpeningMod
   deletButton.setAttribute('aria-label', 'Удалить место');
   deletButton.addEventListener('click', deleteCard);
 
-  // Обработчик слушателя кнопки открытия модального окна карточки
-  function handleClickImage(){
-
-    // Настройка изображения модального окна открытой карточки
-    cardOpeningModalImage.src = cardImage.src;
-    cardOpeningModalImage.alt = cardImage.alt;
-
-    // Настройка подписи модального окна открытой карточки
-    cardOpeningModal.querySelector('.popup__caption').textContent = cardTitle.textContent;
-
-    // Открытие модального окна
-    openModal(cardOpeningModal, closeCardOpenModalButton);
-
-  }
   // Установка слушателя на кнопку открытия модального окна
   cardImage.addEventListener('click', handleClickImage);
   
