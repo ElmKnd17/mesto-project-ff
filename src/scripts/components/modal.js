@@ -1,42 +1,40 @@
-// Обработчик слушателя кнопки Escape
+// Обработчик закрытия окна по нажатию Esc
 function closeByEcsape(evt) {
     if(evt.key === 'Escape') {
-        const openedPopup = document.querySelector('.popup_is-opened');
-        const openedPopupForm = openedPopup.querySelector('.popup__form');
-        closeModal(openedPopup);
-        if(openedPopupForm) {
-            openedPopupForm.reset();
-        }
+        const modal = document.querySelector('.popup_is-opened');
+        const closeButton = modal.querySelector('.popup__close');
+        closeModal(modal, closeButton);
+    }
+}
+
+// Обработчик закрытия окна по нажатию кнопки
+function closeByButtonHandler(evt) {
+    const modal = evt.target.closest('.popup');
+    closeModal(modal, evt.target);
+}
+
+// Обработчик закрытия окна по нажатию оверлея
+function closeByOverlayHandler(evt) {
+    if (evt.target === evt.currentTarget){
+        const closeButton = evt.target.querySelector('.popup__close');
+        closeModal(evt.target, closeButton);
     }
 }
 
 // Функция открытия модального окна
-function openModal(modal) {
+function openModal(modal, closeButton) {
     modal.classList.add('popup_is-opened');
+    modal.addEventListener('click', closeByOverlayHandler);
+    closeButton.addEventListener('click', closeByButtonHandler);
     document.addEventListener('keydown', closeByEcsape);
 }
 
 // Функция закрытия модального окна
-function closeModal(modal) {
+function closeModal(modal, closeButton) {
     modal.classList.remove('popup_is-opened');
+    modal.removeEventListener('click', closeByOverlayHandler);
+    closeButton.removeEventListener('click', closeByButtonHandler);
     document.removeEventListener('keydown', closeByEcsape);
 }
 
-// Функция установки слушателей на модальное окно
-function setModalListeners(modal, formElement, closeButton) {
-    // Открытие модального окна
-    openModal(modal);
-    // Установка слушателей на способы закрытия модального окна (по кнопке и по нажатию вне окна)
-    closeButton.addEventListener('click', () => {
-        closeModal(modal);
-        formElement.reset();
-    })
-    modal.addEventListener('click', (evt) => {
-        if (evt.target.classList.contains('popup')){
-            closeModal(evt.target);
-            formElement.reset();
-        }
-    })
-}
-
-export {openModal, closeModal, setModalListeners};
+export {openModal, closeModal};
