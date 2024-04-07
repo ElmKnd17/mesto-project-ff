@@ -1,5 +1,3 @@
-import { cards } from "./cards";
-
 const TOKEN = 'ebe2531e-a633-4ca4-9e9d-18db3ca8a83f';
 
 const config = {
@@ -23,7 +21,7 @@ const getUserData = () => {
             headers: config.headersTypeGet
         })
         .then(res => {
-            return res.ok ? res.json() : Promise.reject(res.status);
+            return handleResponse(res);
         })
 }
 
@@ -32,7 +30,7 @@ const getCardsData = () => {
         headers: config.headersTypeGet
     })
     .then(res => {
-        return res.ok ? res.json() : Promise.reject(res.status);
+        return handleResponse(res);
     })
 }
 
@@ -46,7 +44,7 @@ const patchUserData = (name, job) => {
         })
     })
     .then(res => {
-        return res.ok ? res.json() : Promise.reject(res.status);
+        return handleResponse(res);
     })
 }
 
@@ -60,7 +58,7 @@ const postCardsData = (name, url) => {
         })
     })
     .then(res => {
-        return res.ok ? res.json() : Promise.reject(res.status);
+        return handleResponse(res);
     })
 }
 
@@ -70,7 +68,7 @@ const deleteCardsData = (id) => {
         headers: config.headersTypeGet,
     })
     .then(res => {
-        return res.ok ? res.json() : Promise.reject(res.status);
+        return handleResponse(res);
     });
 }
 
@@ -83,7 +81,7 @@ const patchUserAvatar = (url) => {
         })
     })
     .then(res => {
-        return res.ok ? res.json() : Promise.reject(res.status);
+        return handleResponse(res);
     });
 }
 
@@ -93,7 +91,7 @@ const putLikeData = (id) => {
         headers: config.headersTypeGet
     })
     .then(res => {
-        return res.ok ? res.json() : Promise.reject(res.status);
+        return handleResponse(res);
     });
 }
 
@@ -103,8 +101,12 @@ const deleteLikeData = (id) => {
         headers: config.headersTypeGet
     })
     .then(res => {
-        return res.ok ? res.json() : Promise.reject(res.status);
+        return handleResponse(res);
     });
+}
+
+const handleResponse = (res) => {
+    return res.ok ? res.json() : Promise.reject(res.status);
 }
 
 export {getUserData, getCardsData, patchUserData, postCardsData, deleteCardsData, patchUserAvatar, putLikeData, deleteLikeData};

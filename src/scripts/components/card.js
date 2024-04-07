@@ -1,41 +1,5 @@
-import { deleteLikeData, putLikeData } from "./api";
-
-const initialCards = [
-    {
-      name: "Архыз",
-      link: "https://pictures.s3.yandex.net/frontend-developer/cards-compressed/arkhyz.jpg",
-    },
-    {
-      name: "Челябинская область",
-      link: "https://pictures.s3.yandex.net/frontend-developer/cards-compressed/chelyabinsk-oblast.jpg",
-    },
-    {
-      name: "Иваново",
-      link: "https://pictures.s3.yandex.net/frontend-developer/cards-compressed/ivanovo.jpg",
-    },
-    {
-      name: "Камчатка",
-      link: "https://pictures.s3.yandex.net/frontend-developer/cards-compressed/kamchatka.jpg",
-    },
-    {
-      name: "Холмогорский район",
-      link: "https://pictures.s3.yandex.net/frontend-developer/cards-compressed/kholmogorsky-rayon.jpg",
-    },
-    {
-      name: "Байкал",
-      link: "https://pictures.s3.yandex.net/frontend-developer/cards-compressed/baikal.jpg",
-    }
-];
-
-let cards = [];
-
-function setCards (array) {
-  cards = array;
-}
-
 // Функция создания карточки
 function createCard (cardData, template, likeHandler, handleClickImage, deleteHandler, userId, putLikeData, deleteLikeData) {
-
   // Переменные
   const cardItem = template.content.cloneNode(true); // Объект карточки
   const card = cardItem.querySelector('.card');
@@ -44,22 +8,15 @@ function createCard (cardData, template, likeHandler, handleClickImage, deleteHa
   const likeButton = cardItem.querySelector('.card__like-button'); // Кнопка лайка
   const deletButton = cardItem.querySelector('.card__delete-button'); // Кнопка удаления карточки
   const likeCounter = cardItem.querySelector('.card__like-counter') // Счётчик лайков
-  let numbersOfLikes = 0; // Число лайков
-  let isLiked = false;
-  if (cardData.likes) {
-    numbersOfLikes = cardData.likes.length;
-    Array.from(cardData.likes).forEach(like => {
-      isLiked = (like._id === userId) ? true : false;
-    })
-  }
+  const isLiked = cardData.likes.some(like => {
+    return (like._id === userId) ? true : false;
+  })
 
   if(isLiked) {
     likeButton.classList.add('card__like-button_is-active');
   }
   
-  if(cardData._id) {
-    card.setAttribute('id', cardData._id);
-  }
+  card.setAttribute('id', cardData._id);
 
   // Настройка фотографии карточки
   cardImage.src = cardData.link;
@@ -69,15 +26,15 @@ function createCard (cardData, template, likeHandler, handleClickImage, deleteHa
   cardTitle.textContent = cardData.name;
 
   // Настройка количества лайков карточки
-  likeCounter.textContent = numbersOfLikes;
+  likeCounter.textContent = cardData.likes.length;
 
   // Настройка кнопки лайка карточки
   likeButton.setAttribute('aria-label', 'Поставить лайк');
   likeButton.addEventListener('click', (evt) => {
     likeHandler(evt, cardData, putLikeData, deleteLikeData);
   });
+  
   // Настройка кнопки удаления карточки
-
   if(!(cardData.owner && (cardData.owner._id === userId))) {
     deletButton.remove();
   } else {
@@ -100,17 +57,20 @@ function deleteCard(evt) {
 }
 
 // Функция добавления лайка
-function likeHandler(evt, cardData) {
+function likeHandler(evt, cardData, putLikeData, deleteLikeData) {
   const eventTarget = evt.target;
   const likeCounter = eventTarget.closest('.card__like-container').querySelector('.card__like-counter');
-  if(!eventTarget.classList.contains('card__like-button_is-active')){
-    likeCounter.textContent = Number.parseInt(likeCounter.textContent) + 1;
-    putLikeData(cardData._id);
-  } else {
-    likeCounter.textContent = Number.parseInt(likeCounter.textContent) - 1;
-    deleteLikeData(cardData._id);
-  }
-  eventTarget.classList.toggle('card__like-button_is-active');
+  const likeMethod = eventTarget.classList.contains('card__like-button_is-active')
+    ? deleteLikeData
+    : putLikeData;
+  likeMethod(cardData._id)
+    .then(res => {
+      likeCounter.textContent = res.likes.length;
+      eventTarget.classList.toggle('card__like-button_is-active');
+    })
+    .catch(error => {
+      console.log(error);
+    })
 }
 
-export {cards, createCard, deleteCard, likeHandler, setCards, initialCards};
+export {createCard, deleteCard, likeHandler};

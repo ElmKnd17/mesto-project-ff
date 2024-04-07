@@ -1,8 +1,8 @@
 ///////////////////////////////////// Импорты /////////////////////////////////////
 // Импорт стилей
 import '../pages/index.css';
-// Импорт из cards.js
-import { cards, createCard, likeHandler, setCards, initialCards} from './components/cards.js';
+// Импорт из card.js
+import { createCard, likeHandler} from './components/card.js';
 // Импорт из modal.js
 import { openModal, closeModal } from './components/modal.js';
 // Импопрт из validation.js
@@ -62,27 +62,14 @@ const validationConfig = {
 ///////////////////////////////////// ВАЛИДАЦИЯ /////////////////////////////////////
 enableValidation(validationConfig);
 
-///////////////////////////////////// Профиль /////////////////////////////////////
-let userId;
-    ///////////////// Получение данных пользователя /////////////////
-    getUserData().then(userData => {
-        userId = userData._id;
-        profileTitle.textContent = userData.name;
-        profileDescription.textContent = userData.about;
-        profileImage.style.backgroundImage = `url(${userData.avatar})`;
-    })
-    .catch(error => {
-        console.log(error);
-    });
-
 ///////////////////////////////////// МОДАЛЬНЫЕ ОКНА /////////////////////////////////////
     ///////////////// Модальное окно редактирования профиля /////////////////
 // Слушатель кнопки открытия модального окна
 openProfileModalButton.addEventListener('click', () => {
     openModal(profileModal, closeProfileModalButton);
+    clearValidation(profileFormElement, validationConfig);
     profileNameInput.value = profileTitle.textContent;
     profileJobInput.value = profileDescription.textContent;
-    clearValidation(profileFormElement, validationConfig);
 })
     ///////////////// Модальное окно редактирования карточки /////////////////
 // Обработчик слушателя кнопки открытия модального окна карточки
@@ -102,24 +89,26 @@ function handleClickImage(evt){
 // Слушатель кнопки открытия модального окна
 openCardAdditionModalButton.addEventListener('click', () => {
     openModal(cardAdditionModal, closeCardAdditionalModalButton);
-    cardFormElement.reset();
     clearValidation(cardFormElement, validationConfig);
 })
 
-///////////////////////////////////// КАРТОЧКИ /////////////////////////////////////
-// Вывод карточек на страницу
-getCardsData().then(cardsData => {
-    setCards(Array.from(cardsData));
+///////////////////////////////////// Работа с полученными данными /////////////////////////////////////
+let userId;
+Promise.all([getUserData(), getCardsData()]).then(data => {
+    const [userData, cardsData]  = data;
+    // Данные пользователя
+    userId = userData._id;
+    profileTitle.textContent = userData.name;
+    profileDescription.textContent = userData.about;
+    profileImage.style.backgroundImage = `url(${userData.avatar})`;
+    // Данные карточек
+    const cards = Array.from(cardsData);
     cards.forEach(element => {
         cardList.append(createCard(element, cardTemplate, likeHandler, handleClickImage, deleteHandler, userId, putLikeData, deleteLikeData));
     });
-})
-.catch((error)=> {
-    console.log(error);
-    initialCards.forEach(element => {
-        cardList.append(createCard(element, cardTemplate, likeHandler, handleClickImage, deleteHandler, userId, putLikeData, deleteLikeData));
-    });
-});
+    // Слушатель отправки формы (чтобы всё правильно работало, тоже нужен userId)
+    cardFormElement.addEventListener('submit', handleAddCardFormSubmit);
+}).catch(error => console.log(error));
 
 ///////////////////////////////////// ФОРМЫ /////////////////////////////////////
     ///////////////// Форма профиля /////////////////
@@ -134,10 +123,12 @@ function handleEditProfileFormSubmit(evt) {
         profileTitle.textContent = userData.name;
         profileDescription.textContent = userData.about;
         closeModal(profileModal, closeProfileModalButton);
-        button.textContent = 'Сохранить';
     })
     .catch(error => {
         console.log(error);
+    })
+    .finally(() => {
+        button.textContent = 'Сохранить';
     });
 }
 // Слушатель отправки формы
@@ -151,20 +142,16 @@ function handleAddCardFormSubmit(evt) {
     const button = evt.target.querySelector('.button');
     button.textContent = 'Сохранение...';
     postCardsData(cardNameInput.value, cardUrlInput.value).then(cardData => {
-        const cardName = cardData.name;
-        const cardUrl = cardData.link;
-        const cardOwnerId = cardData.owner._id;
-        const cardId = cardData._id;
-        cardList.prepend(createCard({name: cardName, link: cardUrl, _id: cardId, owner: { _id: cardOwnerId }}, cardTemplate, likeHandler, handleClickImage, deleteHandler, userId, putLikeData, deleteLikeData));
+        cardList.prepend(createCard(cardData, cardTemplate, likeHandler, handleClickImage, deleteHandler, userId, putLikeData, deleteLikeData));
         closeModal(cardAdditionModal, closeCardAdditionalModalButton);
-        button.textContent = 'Сохранить';
     })
     .catch(error => {
         console.log(error);
+    })
+    .finally(() => {
+        button.textContent = 'Сохранить';
     });
 }
-// Слушатель отправки формы
-cardFormElement.addEventListener('submit', handleAddCardFormSubmit);
 
 function handleDeleteCardSubmit(evt) {
     evt.preventDefault();
@@ -202,6 +189,8 @@ avatarFormElement.addEventListener('submit', (evt) => {
         console.log(userData.avatar);
         profileImage.style.backgroundImage = `url(${userData.avatar})`;
         closeModal(avatarModal, closeAvatarModal);
+    })
+    .finally(() => {
         button.textContent = 'Сохранить';
     });
 })
